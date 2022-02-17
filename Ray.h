@@ -8,6 +8,8 @@ namespace rayTracing{
     public:
         Ray(const n_math::Vector3& o, const n_math::Vector3& dir): m_origin(o), m_direction(dir){}
 
+        Ray() {}
+
         // 始線ベクトルを返します
         [[nodiscard]] const n_math::Vector3& origin() const{
             return m_origin;

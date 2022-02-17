@@ -1,11 +1,12 @@
 #pragma once
 #include "Shape.h"
+#include "Material.h"
 
 namespace rayTracing{
     class Sphere : public Shape{
     public:
         Sphere() {}
-        Sphere(const n_math::Vector3& c, float r) : m_center(c), m_radius(r){}
+        Sphere(const n_math::Vector3& c, float r, const std::shared_ptr<Material> mat) : m_center(c), m_radius(r), m_material(mat){}
 
         virtual bool hit(const Ray& r, float t0, float t1, HitRecorder& hitRecorder) const override{
             n_math::Vector3 oc = r.origin() - m_center;
@@ -20,6 +21,7 @@ namespace rayTracing{
                     hitRecorder.t = temp;
                     hitRecorder.p = r.at(hitRecorder.t);
                     hitRecorder.n = (hitRecorder.p - m_center) / m_radius;
+                    hitRecorder.mat = m_material;
                     return true;
                 }
                 temp = (-b + root) / (2.f * a);
@@ -27,6 +29,7 @@ namespace rayTracing{
                     hitRecorder.t = temp;
                     hitRecorder.p = r.at(hitRecorder.t);
                     hitRecorder.n = (hitRecorder.p - m_center) / m_radius;
+                    hitRecorder.mat = m_material;
                     return true;
                 }
             }
@@ -36,5 +39,6 @@ namespace rayTracing{
     private:
         n_math::Vector3 m_center;
         float m_radius;
+        std::shared_ptr<Material> m_material;
     };
 }

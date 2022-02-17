@@ -1,6 +1,6 @@
 #pragma once
 #include "Ray.h"
-#include "HitRecorder.h"
+#include "Material.h"
 namespace rayTracing{
     class Shape{
     public:

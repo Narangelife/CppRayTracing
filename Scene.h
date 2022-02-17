@@ -4,7 +4,13 @@
 #include "Image.h"
 #include "ShapeList.h"
 #include "Sphere.h"
+#include "Material.h"
+#include "Metal.h"
+#include "Dielectric.h"
 #include <random>
+#include <omp.h>
+
+#define MAX_DEPTH 50
 
 namespace rayTracing{
     class Scene{
@@ -20,16 +26,25 @@ namespace rayTracing{
             m_camera = std::make_unique<Camera>(u, v, w);
 
             ShapeList* world = new ShapeList();
-            world->add(std::make_shared<Sphere>(n_math::Vector3{0, 0, -1}, 0.5f));
-            world->add(std::make_shared<Sphere>(n_math::Vector3{1, -100.5f, -1}, 100.f));
+            world->add(std::make_shared<Sphere>(n_math::Vector3{0.6, 0, -1}, 0.5f, std::make_shared<Lambertian>(n_math::Vector3{0.1f, 0.2f, 0.5f})));
+            world->add(std::make_shared<Sphere>(n_math::Vector3{-0.6, 0, -1}, 0.5f, std::make_shared<Dielectric>(1.5f)));
+            world->add(std::make_shared<Sphere>(n_math::Vector3{-0.6, 0, -1}, -0.49f, std::make_shared<Dielectric>(1.5f)));
+            world->add(std::make_shared<Sphere>(n_math::Vector3{0, -0.35, -0.8f}, 0.15f, std::make_shared<Metal>(n_math::Vector3{0.8f, 0.8f, 0.8f}, 0.2f)));
+            world->add(std::make_shared<Sphere>(n_math::Vector3{1, -100.5f, -1}, 100.f, std::make_shared<Lambertian>(n_math::Vector3{0.8f, 0.8f, 0.f})));
             m_world.reset(world);
         }
 
-        n_math::Vector3 color(const Ray& r, const Shape* world) const{
+        n_math::Vector3 color(const Ray& r, const Shape* world, int depth) const{
             HitRecorder hitRecorder;
             if (world->hit(r, 0.001f, FLT_MAX, hitRecorder)){
-                n_math::Vector3 target = hitRecorder.p + hitRecorder.n + Ray::random_in_unit_sphere();
-                return 0.8f * color(Ray(hitRecorder.p, target - hitRecorder.p), world);
+                ScatterRecorder scatterRecorder;
+                if (depth < MAX_DEPTH && hitRecorder.mat->scatter(r, hitRecorder, scatterRecorder)){
+                    return n_math::hadamard(scatterRecorder.albedo, color(scatterRecorder.ray, world, depth++));
+                }else{
+                    return n_math::Vector3{0, 0, 0};
+                }
+//                n_math::Vector3 target = hitRecorder.p + hitRecorder.n + Ray::random_in_unit_sphere();
+//                return 0.8f * color(Ray(hitRecorder.p, target - hitRecorder.p), world);
             }
             return backgroundSky(r.direction());
         }
@@ -48,11 +63,10 @@ namespace rayTracing{
             build();
             int nx = m_image->width();
             int ny = m_image->height();
-//#pragma omp parallel for schedule(dynamic, 1) num_threads(NUM_THREAD)
             // 計測開始
             clock_t start = clock();
             std::cerr << "Rendering..." << std::endl;
-
+//#pragma omp parallel for schedule(dynamic, 1) num_threads(NUM_THREAD)
             // 処理開始
             for (int i = 0; i < ny; i++){
                 for (int j = 0; j < nx; j++){
@@ -61,7 +75,7 @@ namespace rayTracing{
                         float u = (float(j) + n_math::drand()) / float(nx);
                         float v = (float(i) + n_math::drand()) / float(ny);
                         Ray r = m_camera->getRay(u, v);
-                        c = c + color(r, m_world.get());
+                        c = c + color(r, m_world.get(), 0);
                     }
                     c = c / (float)m_samples;
                     m_image->write(j, (ny - i - 1), c.x, c.y, c.z);
