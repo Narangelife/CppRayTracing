@@ -6,6 +6,7 @@
 #local
 .idea/
 cmake-build-debug/
+out/
 
 Library/stb_image.h
 Library/stb_image_write.h
