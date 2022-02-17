@@ -9,6 +9,7 @@
 #include "Library/stb_image_write.h"
 #include "Library/n_math.h"
 #include "Filter.h"
+#include "TonemapFilter.h"
 
 #define GAMMA_FACTOR 2.2
 
@@ -28,6 +29,7 @@ namespace rayTracing{
             m_height = height;
             m_pixcels.reset(new rgb[m_width * m_height]);
             m_filters.push_back(std::make_unique<GammaFilter>(GAMMA_FACTOR));
+            m_filters.push_back(std::make_unique<TonemapFilter>());
         }
 
         int width() const {

@@ -8,7 +8,7 @@
 int main() {
     int nx = 960;
     int ny = 540;
-    int ns = 10;
+    int ns = 500;
     std::unique_ptr<rayTracing::Scene> scene(std::make_unique<rayTracing::Scene>(nx, ny, ns));
     scene->render();
 
