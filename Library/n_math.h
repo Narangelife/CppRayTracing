@@ -127,6 +127,26 @@ namespace n_math{
         return value;
     }
 
+    // 各要素ごとに最小なベクトルを返します
+    Vector3 minPerElem(Vector3 u, Vector3 v){
+        Vector3 value{
+            .x = u.x < v.x ? u.x : v.x,
+            .y = u.y < v.y ? u.y : v.y,
+            .z = u.z < v.z ? u.z : v.z
+        };
+        return value;
+    }
+
+    // 各要素ごとに最大なベクトルを返します
+    Vector3 maxPerElem(Vector3 u, Vector3 v){
+        Vector3 value{
+                .x = u.x > v.x ? u.x : v.x,
+                .y = u.y > v.y ? u.y : v.y,
+                .z = u.z > v.z ? u.z : v.z
+        };
+        return value;
+    }
+
     // n乗を返します
     inline float pow(float x, unsigned n){
         float value = 1.f;
